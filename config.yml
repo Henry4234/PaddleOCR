@@ -1,0 +1,92 @@
+Architecture:
+  Backbone:
+    layers: 34
+    name: ResNet
+  Head:
+    fc_decay: 0.0004
+    name: CTCHead
+  Neck:
+    encoder_type: rnn
+    hidden_size: 256
+    name: SequenceEncoder
+  Transform: null
+  algorithm: CRNN
+  model_type: rec
+Eval:
+  dataset:
+    data_dir: '../training_images'
+    label_file_list: ['../training_images/labels.txt']
+    name: SimpleDataSet
+    transforms:
+      - DecodeImage:
+          channel_first: false
+          img_mode: BGR
+      - CTCLabelEncode:
+          max_text_length: 25
+      - RecResizeImg:
+          image_shape: [3, 32, 320]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length']
+  loader:
+    batch_size_per_card: 8
+    drop_last: false
+    num_workers: 4
+    shuffle: false
+Global:
+  character_dict_path: './ppocr/utils/dict/chinese_cht_dict.txt'
+  epoch_num: 10
+  eval_batch_step: [0, 2000]
+  image_shape: [3, 32, 320]
+  infer_img: '../training_images/train_0.jpg'
+  label_file_list: ['../training_images/labels.txt']
+  label_file_list_test: ['../training_images/labels.txt']
+  log_smooth_window: 20
+  max_text_length: 25
+  print_batch_step: 10
+  save_epoch_step: 1
+  save_model_dir: './output/rec/rec_resnet34_crnn_train'
+  test_batch_size_per_card: 8
+  test_data_dir: '../training_images'
+  train_batch_size_per_card: 8
+  train_data_dir: '../training_images'
+  use_gpu: true
+Loss:
+  loss_weight: 1.0
+  main_indicator: acc
+  name: CTCLoss
+Metric:
+  name: RecMetric
+  main_indicator: acc
+Optimizer:
+  beta1: 0.9
+  beta2: 0.999
+  lr:
+    learning_rate: 0.001
+    name: Cosine
+    warmup_epoch: 5
+  name: Adam
+  regularizer:
+    factor: 2.0e-05
+    name: L2
+PostProcess:
+  name: CTCLabelDecode
+Train:
+  dataset:
+    data_dir: '../training_images'
+    label_file_list: ['../training_images/labels.txt']
+    name: SimpleDataSet
+    transforms:
+      - DecodeImage:
+          channel_first: false
+          img_mode: BGR
+      - CTCLabelEncode:
+          max_text_length: 25
+      - RecResizeImg:
+          image_shape: [3, 32, 320]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length']
+  loader:
+    batch_size_per_card: 8
+    drop_last: true
+    num_workers: 4
+    shuffle: true
